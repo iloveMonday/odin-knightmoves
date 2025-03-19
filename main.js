@@ -81,7 +81,7 @@ function constructPath(board, infoArray, item, index, newArray){
 
 
 
-function knightMoves(start = [1,0], end = [0,2]) {
+function knightMoves(start = [1,0], end = [5,5]) {
     let board = buildGrid();
     let startIndex = findIndex(board, start);
     let endIndex = findIndex(board, end);
