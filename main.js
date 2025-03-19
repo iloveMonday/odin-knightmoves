@@ -8,71 +8,14 @@
 
 function buildGrid(size = 8) {
   let board = [];
-
   for (let i = 0; i < size; i++) {
-    board.push([]);
-
+    // board.push([]);
     for (let j = 0; j < size; j++) {
-      board[i].push([i,j]);
-      // possibleMoves(board)
+      board.push([i,j]);
     }
   }
-
   return board;
 }
-
-function findNextMove(index, x, y) {
-    if (index == 0) return [x+2, y+1];
-    if (index == 1) return [x+1, y+2];
-    if (index == 2) return [x-1, y+2];
-    if (index == 3) return [x-2, y+1];
-    if (index == 4) return [x-2, y-1];
-    if (index == 5) return [x-1, y-2];
-    if (index == 6) return [x+1, y-2];
-    if (index == 7) return [x+2, y-1];
-}
-
-
-function possibleMoves(board, size = board.length) {
-    let adjList = board
-
-  for (i = 0; i < board.length; i++) {
-
-    for (j = 0; j < size; j++) {
-      if (i + 2 < size && j + 1 < size) {
-        adjList[i][j].push([i + 2, j + 1]);
-      }
-      if (i + 2 < size && j - 1 >= 0) {
-        adjList[i][j].push([i + 2, j - 1]);
-      }
-      if (i - 2 >= 0 && j + 1 < size) {
-        adjList[i][j].push([i - 2, j + 1]);
-      }
-      if (i - 2 >= 0 && j - 1 >= 0) {
-        adjList[i][j].push([i - 2, j - 1]);
-      }
-      if (i + 1 < size && j + 2 < size) {
-        adjList[i][j].push([i + 1, j + 2]);
-      }
-      if (i + 1 < size && j - 2 >= 0) {
-        adjList[i][j].push([i + 1, j - 2]);
-      }
-      if (i - 1 >= 0 && j + 2 < size) {
-        adjList[i][j].push([i - 1, j + 2]);
-      }
-      if (i - 1 >= 0 && j - 2 >= 0) {
-        adjList[i][j].push([i - 1, j - 2]);
-      }
-    }
-  }
-  return adjList;
-}
-
-// function findPosition(possMoves, position){
-//     let board = possMoves;
-//     return board[position[0]][position[1]]
-
-// }
 
 function findIndex(array, target){
     for (let i = 0; i < array.length; i++){
@@ -82,103 +25,106 @@ function findIndex(array, target){
     }
 }
 
-// function buildInfoArray(board, startIndex){
-//     let newArr = [];
-//     for (let i = 0; i < board.length; i++){
-//         newArr[i] = {
-//             distance: null,
-//             predecessor: null
-//         }
-//     }
-//     newArr[startIndex].distance = 0;
-//     return newArr;
-// }
+function containsMove(array, target){
+    if (array.find(element => element[0] === target[0]) &&
+        array.find(element => element[1] === target[1])){
+            return true;
+        }
+}
 
+function findNextMove(index, x, y) {
+    if (index == 0) return [x + 2, y + 1];
+    if (index == 1) return [x + 1, y + 2];
+    if (index == 2) return [x - 1, y + 2];
+    if (index == 3) return [x - 2, y + 1];
+    if (index == 4) return [x - 2, y - 1];
+    if (index == 5) return [x - 1, y - 2];
+    if (index == 6) return [x + 1, y - 2];
+    if (index == 7) return [x + 2, y - 1];
+}
 
-
-
-
-
-function test(start = [1,0], end = [0,2]) {
-  let board = buildGrid();
-  let moves = possibleMoves(buildGrid());
-//   let moves = possibleMoves(board)
-//   let startIndex = findPosition(moves, start)
-    // let startIndex = findIndex(moves, start);
-    // let  startIndex = start;
-    // let bfsInfo = buildInfoArray(moves, startIndex)
-    // let queue = [startIndex]
-
-//   return startIndex;
-// return board;
-return moves;
+function buildInfoArray(board, startIndex){
+    let newArr = [];
+    for (let i = 0; i < board.length; i++){
+        newArr[i] = {
+            distance: null,
+            predecessor: null
+        }
+    }
+    newArr[startIndex].distance = 0;
+    return newArr;
 }
 
 
-///// THE QUEUE
-
-let Queue = function() {
-    this.items = [];
-};
-Queue.prototype.enqueue = function(obj) {
-    this.items.push(obj);
-};
-Queue.prototype.dequeue = function() {
-    return this.items.shift();
-};
-Queue.prototype.isEmpty = function() {
-    return this.items.length === 0;
-};
-
-
-///// BFS PROTOTYPE
-
-let doBFS = function(board, start) {
-    let bfsInfo = [];
-
-    for (let i = 0; i < board.length; i++) {
-        for (let j = 0; j < board.length; j++){
-	    bfsInfo[i][j] = {
-	        distance: null,
-	        predecessor: null };
+function buildAdjList(board){
+    let adjList = [];
+    for (let i = 0; i < board.length; i++){
+        let moves = [];
+        for (let j = 0; j < 8; j++){
+            let move = findNextMove(j, board[i][0], board[i][1]);
+            if (containsMove(board, move)) {
+                moves.push(findIndex(board, move));
+            }
         }
+        adjList[i] = moves;
     }
+    return adjList;
+}
 
-    bfsInfo[start].distance = 0;
+function constructPath(board, infoArray, item, index, newArray){
+    if (item.predecessor === null) return;
+    if (item.predecessor != null) {
+        newArray.push(board[index]);
+        constructPath(board, infoArray[item.predecessor], item.predecessor, newArray);
+    }
+}
 
-    let queue = new Queue();
-    queue.enqueue(start);
-    //
-    
-    while (!queue.isEmpty()){
-        let vert = queue.dequeue();
-        
-        for(let u = 0; u < board[vert].length; u++){
-            let neighbor = board[vert][u];
-            
-            
-            if (bfsInfo[neighbor].distance === null){
-                bfsInfo[neighbor].distance = bfsInfo[vert].distance+1;
-                bfsInfo[neighbor].predecessor = vert;
-                queue.enqueue(neighbor);
+
+
+function knightMoves(start = [1,0], end = [0,2]) {
+    let board = buildGrid();
+    let startIndex = findIndex(board, start);
+    let endIndex = findIndex(board, end);
+    let bfsInfo = buildInfoArray(board, startIndex);
+    let adjList = buildAdjList(board);
+    let queue= [startIndex]; 
+    let u;
+//   return adjList;
+
+    while (u != endIndex){
+        //set first element of queue to u
+        u = queue.shift();
+
+        //iterate through each neighbor v of u
+        for (let i=0; i<adjList[u].length; i++){
+            let vIndex = adjList[u][i];
+            //if the neighbor index is the end square, build & return path
+            if (vIndex === endIndex){
+                bfsInfo[vIndex].predecessor = u;
+                let path = [];
+                constructPath(board, bfsInfo, bfsInfo[vIndex], vIndex, path);
+                result = path.reverse().splice(0,0, start);
+                console.log(`You made it ${path.length - 1} moves! Here's your path dude: `);
+                return path;
+            } else {
+                //update info for neighbor square and enqueue
+                if (bfsInfo[vIndex].distance == null){
+                    bfsInfo[vIndex].distance = bfsInfo[u].distance +1;
+                    bfsInfo[vIndex].predecessor = u;
+                    queue.push(vIndex);
+                }
             }
         }
     }
-}
+  }
 
 
 
 
-
-
-
-function knightMoves(start, end) {
-
-}
 
 // console.log(buildGrid());
 
-console.log(test())
+console.log(knightMoves())
 // console.log(knightMoves([0,0], [4,2]))
 
 //[x]build a board
